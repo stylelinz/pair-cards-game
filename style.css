@@ -1,5 +1,6 @@
 #cards {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .card {
@@ -9,6 +10,9 @@
   /* flex = flex-basis + flex-grow + flex-shrink */
   height: 8vw;
   border: 2px solid #e3e3e3;
+  margin: 2px;
+  box-sizing: border-box;
+
 
   /* layout in each card */
   display: flex;
