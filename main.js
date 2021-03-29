@@ -13,6 +13,10 @@ const Symbols = [
   'https://image.flaticon.com/icons/svg/105/105219.svg'  // club
 ]
 
+const model = {
+  revealedCards: []
+}
+
 const view = {
   getCardElement(index) {
     return `<div data-index="${index}" class="card back"></div>`
@@ -44,9 +48,9 @@ const view = {
     }
   },
 
-  displayCards() {
+  displayCards(indexes) {
     const rootElement = document.querySelector('#cards')
-    rootElement.innerHTML = utility.getRandomNumberArray(52).map(index => this.getCardElement(index)).join('')
+    rootElement.innerHTML = indexes.map(index => this.getCardElement(index)).join('')
   },
 
   flipCard(card) {
@@ -63,6 +67,14 @@ const view = {
   }
 }
 
+const controller = {
+  currentState: GAME_STATE.FirstCardAwaits,
+
+  generateCards() {
+    view.displayCards(utility.getRandomNumberArray(52))
+  }
+}
+
 const utility = {
   getRandomNumberArray(count) {
     const number = Array.from((Array(count).keys()))
@@ -73,7 +85,7 @@ const utility = {
     return number
   }
 }
-view.displayCards()
+controller.generateCards()
 
 document.querySelectorAll('.card').forEach(card => {
   card.addEventListener('click', event => {
