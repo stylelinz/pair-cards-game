@@ -1,3 +1,11 @@
+const GAME_STATE = {
+  FirstCardAwaits: 'FirstCardAwaits',
+  SecondCardAwaits: 'SecondCardAwaits',
+  CardsMatchFailed: 'CardsMatchFailed',
+  CardsMatched: 'CardsMatched',
+  GameFinished: 'GameFinished',
+}
+
 const Symbols = [
   'https://image.flaticon.com/icons/svg/105/105223.svg', // spade
   'https://image.flaticon.com/icons/svg/105/105220.svg', // heart
