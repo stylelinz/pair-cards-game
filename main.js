@@ -7,14 +7,17 @@ const Symbols = [
 
 const view = {
   getCardElement(index) {
+    return `<div data-index="${index}" class="card back"></div>`
+  },
+
+  getCardContent(index) {
     const number = this.transformNumber((index % 13) + 1)
     const cardSymbol = Symbols[Math.floor(index / 13)]
+
     return `
-    <div class="card">
       <p>${number}</p>
       <img src="${cardSymbol}" />
       <p>${number}</p>
-    </div>
     `
   },
 
@@ -37,6 +40,19 @@ const view = {
     const rootElement = document.querySelector('#cards')
     rootElement.innerHTML = utility.getRandomNumberArray(52).map(index => this.getCardElement(index)).join('')
   },
+
+  flipCard(card) {
+    if (card.classList.contains('back')) {
+      // back to front
+      card.classList.remove('back')
+      card.innerHTML = this.getCardContent(Number(card.dataset.index)) // 12 for temp
+      return
+    }
+
+    //  Front to back
+    card.classList.add('back')
+    card.innerHTML = null
+  }
 }
 
 const utility = {
@@ -50,3 +66,9 @@ const utility = {
   }
 }
 view.displayCards()
+
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('click', event => {
+    view.flipCard(card)
+  })
+})
