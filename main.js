@@ -72,7 +72,22 @@ const controller = {
 
   generateCards() {
     view.displayCards(utility.getRandomNumberArray(52))
-  }
+  },
+
+  dispatchCardAction(card) {
+    if (!card.classList.contains('back')) return
+
+    switch (this.currentState) {
+    case GAME_STATE.FirstCardAwaits:
+      view.flipCard(card)
+      model.revealedCards.push(card)
+      this.currentState = GAME_STATE.SecondCardAwaits
+      break
+    case GAME_STATE.SecondCardAwaits:
+      view.flipCard(card)
+      model.revealedCards.push(card)
+    }
+  },
 }
 
 const utility = {
@@ -88,7 +103,7 @@ const utility = {
 controller.generateCards()
 
 document.querySelectorAll('.card').forEach(card => {
-  card.addEventListener('click', event => {
-    view.flipCard(card)
+  card.addEventListener('click', () => {
+    controller.dispatchCardAction(card)
   })
 })
