@@ -14,7 +14,11 @@ const Symbols = [
 ]
 
 const model = {
-  revealedCards: []
+  revealedCards: [],
+
+  isRevealedCardsMatched() {
+    return Number(this.revealedCards[0].dataset.index) % 13 === Number(this.revealedCards[1].dataset.index) % 13
+  }
 }
 
 const view = {
@@ -57,14 +61,18 @@ const view = {
     if (card.classList.contains('back')) {
       // back to front
       card.classList.remove('back')
-      card.innerHTML = this.getCardContent(Number(card.dataset.index)) // 12 for temp
+      card.innerHTML = this.getCardContent(Number(card.dataset.index))
       return
     }
 
     //  Front to back
     card.classList.add('back')
     card.innerHTML = null
-  }
+  },
+
+  pairCard(card) {
+    card.classList.add('paired')
+  },
 }
 
 const controller = {
@@ -86,6 +94,25 @@ const controller = {
     case GAME_STATE.SecondCardAwaits:
       view.flipCard(card)
       model.revealedCards.push(card)
+      // Check cards' number are same.
+      if (model.isRevealedCardsMatched()) {
+        // mark the paired cards
+        this.currentState = GAME_STATE.CardsMatched
+        view.pairCard(model.revealedCards[0])
+        view.pairCard(model.revealedCards[1])
+        this.currentState = GAME_STATE.FirstCardAwaits
+        model.revealedCards = []
+      } else {
+        // flip back the cards, and clear array model.revealCards
+        this.currentState = GAME_STATE.CardsMatchFailed
+        setTimeout(() => {
+          view.flipCard(model.revealedCards[0])
+          view.flipCard(model.revealedCards[1])
+          model.revealedCards = []
+          this.currentState = GAME_STATE.FirstCardAwaits
+        }, 1000)
+      }
+      break
     }
   },
 }
