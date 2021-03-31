@@ -83,7 +83,7 @@ const view = {
   },
 
   renderTried(tried) {
-    document.querySelecotr('.tried').textContent = `You've tried: ${tried} times`
+    document.querySelector('.tried').textContent = `You've tried: ${tried} times`
   },
 }
 
