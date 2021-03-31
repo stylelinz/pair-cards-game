@@ -39,16 +39,16 @@ const view = {
 
   transformNumber(number) {
     switch (number) {
-    case 1:
-      return 'A'
-    case 11:
-      return 'J'
-    case 12:
-      return 'Q'
-    case 13:
-      return 'K'
-    default:
-      return number
+      case 1:
+        return 'A'
+      case 11:
+        return 'J'
+      case 12:
+        return 'Q'
+      case 13:
+        return 'K'
+      default:
+        return number
     }
   },
 
@@ -57,21 +57,23 @@ const view = {
     rootElement.innerHTML = indexes.map(index => this.getCardElement(index)).join('')
   },
 
-  flipCard(card) {
-    if (card.classList.contains('back')) {
-      // back to front
-      card.classList.remove('back')
-      card.innerHTML = this.getCardContent(Number(card.dataset.index))
-      return
-    }
+  flipCards(...cards) {
+    cards.forEach(card => {
+      if (card.classList.contains('back')) {
+        // Flip cards from back to front
+        card.classList.remove('back')
+        card.innerHTML = this.getCardContent(Number(card.dataset.index))
+        return
+      }
 
-    //  Front to back
-    card.classList.add('back')
-    card.innerHTML = null
+      //  Flip cards from front to back
+      card.classList.add('back')
+      card.innerHTML = null
+    })
   },
 
-  pairCard(card) {
-    card.classList.add('paired')
+  pairCards(...cards) {
+    cards.forEach(card => card.classList.add('paired'))
   },
 }
 
@@ -86,35 +88,34 @@ const controller = {
     if (!card.classList.contains('back')) return
 
     switch (this.currentState) {
-    case GAME_STATE.FirstCardAwaits:
-      view.flipCard(card)
-      model.revealedCards.push(card)
-      this.currentState = GAME_STATE.SecondCardAwaits
-      break
-    case GAME_STATE.SecondCardAwaits:
-      view.flipCard(card)
-      model.revealedCards.push(card)
-      // Check cards' number are same.
-      if (model.isRevealedCardsMatched()) {
-        // mark the paired cards
-        this.currentState = GAME_STATE.CardsMatched
-        view.pairCard(model.revealedCards[0])
-        view.pairCard(model.revealedCards[1])
-        this.currentState = GAME_STATE.FirstCardAwaits
-        model.revealedCards = []
-      } else {
-        // flip back the cards, and clear array model.revealCards
-        this.currentState = GAME_STATE.CardsMatchFailed
-        setTimeout(() => {
-          view.flipCard(model.revealedCards[0])
-          view.flipCard(model.revealedCards[1])
-          model.revealedCards = []
+      case GAME_STATE.FirstCardAwaits:
+        view.flipCards(card)
+        model.revealedCards.push(card)
+        this.currentState = GAME_STATE.SecondCardAwaits
+        break
+      case GAME_STATE.SecondCardAwaits:
+        view.flipCards(card)
+        model.revealedCards.push(card)
+        // Check cards' number are same.
+        if (model.isRevealedCardsMatched()) {
+          // mark the paired cards
+          this.currentState = GAME_STATE.CardsMatched
+          view.pairCards(...model.revealedCards)
           this.currentState = GAME_STATE.FirstCardAwaits
-        }, 1000)
-      }
-      break
+          model.revealedCards = []
+        } else {
+          // flip back the cards, and clear array model.revealCards
+          this.currentState = GAME_STATE.CardsMatchFailed
+          setTimeout(this.resetCards, 1000)
+        }
+        break
     }
   },
+  resetCards() {
+    view.flipCards(...model.revealedCards)
+    model.revealedCards = []
+    controller.currentState = GAME_STATE.FirstCardAwaits
+  }
 }
 
 const utility = {
