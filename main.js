@@ -15,10 +15,12 @@ const Symbols = [
 
 const model = {
   revealedCards: [],
+  score: 0,
+  triedTimes: 0,
 
   isRevealedCardsMatched() {
     return Number(this.revealedCards[0].dataset.index) % 13 === Number(this.revealedCards[1].dataset.index) % 13
-  }
+  },
 }
 
 const view = {
@@ -75,6 +77,14 @@ const view = {
   pairCards(...cards) {
     cards.forEach(card => card.classList.add('paired'))
   },
+
+  renderScore(score) {
+    document.querySelector('.score').textContent = `Score: ${score}`
+  },
+
+  renderTried(tried) {
+    document.querySelecotr('.tried').textContent = `You've tried: ${tried} times`
+  },
 }
 
 const controller = {
@@ -94,12 +104,14 @@ const controller = {
         this.currentState = GAME_STATE.SecondCardAwaits
         break
       case GAME_STATE.SecondCardAwaits:
+        view.renderTried(++model.triedTimes)
         view.flipCards(card)
         model.revealedCards.push(card)
         // Check cards' number are same.
         if (model.isRevealedCardsMatched()) {
           // mark the paired cards
           this.currentState = GAME_STATE.CardsMatched
+          view.renderScore(model.score += 10)
           view.pairCards(...model.revealedCards)
           this.currentState = GAME_STATE.FirstCardAwaits
           model.revealedCards = []
