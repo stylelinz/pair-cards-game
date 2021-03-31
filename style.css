@@ -74,3 +74,14 @@
 #header .tried {
   margin-top: 0;
 }
+
+.wrong {
+  animation: wrongAnimation 0.2s;
+  animation-iteration-count: 3;
+}
+
+@keyframes wrongAnimation {
+  to {
+    border: 2px solid red
+  }
+}

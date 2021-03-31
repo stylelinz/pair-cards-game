@@ -85,6 +85,16 @@ const view = {
   renderTried(tried) {
     document.querySelector('.tried').textContent = `You've tried: ${tried} times`
   },
+
+  wrongCardsAnimate(...cards) {
+    cards.forEach(card => {
+      card.classList.add('wrong')
+      addEventListener('animationend', (event) => {
+        event.target.classList.remove('wrong')
+      },
+        { once: true })
+    })
+  }
 }
 
 const controller = {
@@ -118,6 +128,7 @@ const controller = {
         } else {
           // flip back the cards, and clear array model.revealCards
           this.currentState = GAME_STATE.CardsMatchFailed
+          view.wrongCardsAnimate(...model.revealedCards)
           setTimeout(this.resetCards, 1000)
         }
         break
