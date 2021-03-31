@@ -90,7 +90,7 @@ const view = {
     cards.forEach(card => {
       card.classList.add('wrong')
       addEventListener('animationend', (event) => {
-        event.target.classList.remove('wrong')
+        card.classList.remove('wrong')
       },
         { once: true })
     })
