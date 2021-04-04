@@ -15,10 +15,12 @@ const Symbols = [
 
 const model = {
   revealedCards: [],
+  score: 0,
+  triedTimes: 0,
 
   isRevealedCardsMatched() {
     return Number(this.revealedCards[0].dataset.index) % 13 === Number(this.revealedCards[1].dataset.index) % 13
-  }
+  },
 }
 
 const view = {
@@ -39,16 +41,16 @@ const view = {
 
   transformNumber(number) {
     switch (number) {
-    case 1:
-      return 'A'
-    case 11:
-      return 'J'
-    case 12:
-      return 'Q'
-    case 13:
-      return 'K'
-    default:
-      return number
+      case 1:
+        return 'A'
+      case 11:
+        return 'J'
+      case 12:
+        return 'Q'
+      case 13:
+        return 'K'
+      default:
+        return number
     }
   },
 
@@ -57,22 +59,54 @@ const view = {
     rootElement.innerHTML = indexes.map(index => this.getCardElement(index)).join('')
   },
 
-  flipCard(card) {
-    if (card.classList.contains('back')) {
-      // back to front
-      card.classList.remove('back')
-      card.innerHTML = this.getCardContent(Number(card.dataset.index))
-      return
-    }
+  flipCards(...cards) {
+    cards.forEach(card => {
+      if (card.classList.contains('back')) {
+        // Flip cards from back to front
+        card.classList.remove('back')
+        card.innerHTML = this.getCardContent(Number(card.dataset.index))
+        return
+      }
 
-    //  Front to back
-    card.classList.add('back')
-    card.innerHTML = null
+      //  Flip cards from front to back
+      card.classList.add('back')
+      card.innerHTML = null
+    })
   },
 
-  pairCard(card) {
-    card.classList.add('paired')
+  pairCards(...cards) {
+    cards.forEach(card => card.classList.add('paired'))
   },
+
+  renderScore(score) {
+    document.querySelector('.score').textContent = `Score: ${score}`
+  },
+
+  renderTried(tried) {
+    document.querySelector('.tried').textContent = `You've tried: ${tried} times`
+  },
+
+  wrongCardsAnimate(...cards) {
+    cards.forEach(card => {
+      card.classList.add('wrong')
+      addEventListener('animationend', (event) => {
+        card.classList.remove('wrong')
+      },
+        { once: true })
+    })
+  },
+
+  showGameFinished() {
+    const div = document.createElement('div')
+    div.classList.add('completed')
+    div.innerHTML = `
+      <p>Complete!</p>
+      <p>Score: ${model.score}</p>
+      <p>You've tried: ${model.triedTimes} times</p>
+    `
+    const header = document.querySelector('#header')
+    header.before(div)
+  }
 }
 
 const controller = {
@@ -86,35 +120,43 @@ const controller = {
     if (!card.classList.contains('back')) return
 
     switch (this.currentState) {
-    case GAME_STATE.FirstCardAwaits:
-      view.flipCard(card)
-      model.revealedCards.push(card)
-      this.currentState = GAME_STATE.SecondCardAwaits
-      break
-    case GAME_STATE.SecondCardAwaits:
-      view.flipCard(card)
-      model.revealedCards.push(card)
-      // Check cards' number are same.
-      if (model.isRevealedCardsMatched()) {
-        // mark the paired cards
-        this.currentState = GAME_STATE.CardsMatched
-        view.pairCard(model.revealedCards[0])
-        view.pairCard(model.revealedCards[1])
-        this.currentState = GAME_STATE.FirstCardAwaits
-        model.revealedCards = []
-      } else {
-        // flip back the cards, and clear array model.revealCards
-        this.currentState = GAME_STATE.CardsMatchFailed
-        setTimeout(() => {
-          view.flipCard(model.revealedCards[0])
-          view.flipCard(model.revealedCards[1])
+      case GAME_STATE.FirstCardAwaits:
+        view.flipCards(card)
+        model.revealedCards.push(card)
+        this.currentState = GAME_STATE.SecondCardAwaits
+        break
+      case GAME_STATE.SecondCardAwaits:
+        view.renderTried(++model.triedTimes)
+        view.flipCards(card)
+        model.revealedCards.push(card)
+        // Check cards' number are same.
+        if (model.isRevealedCardsMatched()) {
+          // mark the paired cards
+          this.currentState = GAME_STATE.CardsMatched
+          view.renderScore(model.score += 10)
+          view.pairCards(...model.revealedCards)
           model.revealedCards = []
+          // if all cards are paired...
+          if (model.score === 260) {
+            this.currentState = GAME_STATE.GameFinished
+            view.showGameFinished()
+            return
+          }
           this.currentState = GAME_STATE.FirstCardAwaits
-        }, 1000)
-      }
-      break
+        } else {
+          // flip back the cards, and clear array model.revealCards
+          this.currentState = GAME_STATE.CardsMatchFailed
+          view.wrongCardsAnimate(...model.revealedCards)
+          setTimeout(this.resetCards, 1000)
+        }
+        break
     }
   },
+  resetCards() {
+    view.flipCards(...model.revealedCards)
+    model.revealedCards = []
+    controller.currentState = GAME_STATE.FirstCardAwaits
+  }
 }
 
 const utility = {
